@@ -125,7 +125,7 @@ public class HeadStorage {
         if (id == -1) {
             id = (lastId = lastId + 1);
             this.ids.put(texture, id);
-            logger.trace("No id present for '" + texture + "' | Assigned new id: " + id);
+            logger.trace("No id present for '" + st + "' | Assigned new id: " + id);
         }
 
         return id;
