@@ -18,6 +18,10 @@ public class HeadStorage {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void update() {
+        if (!container.exists()) {
+            container.mkdir();
+        }
+
         for (Category category : Category.VALUES) {
             logger.info("Fetching: " + category.getName());
             try {
