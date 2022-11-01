@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +37,7 @@ public class HeadStorage {
         for (Category category : Category.VALUES) {
             logger.info("Fetching: " + category.getName());
             try {
-                RequestUtils.fetchCategory(category).ifPresentOrElse(response -> {
+                Utils.fetchCategory(category).ifPresentOrElse(response -> {
                     File file = new File(container, category.getName() + ".json");
                     if (file.exists()) {
                         if (file.delete()) {
@@ -54,7 +54,7 @@ public class HeadStorage {
                     }
 
                     try (FileWriter writer = new FileWriter(file)) {
-                        writer.write(injectIds(response));
+                        writer.write(Utils.compress(injectIds(response)));
                         logger.info("Updated file category: " + category.name());
                     } catch (IOException ex) {
                         logger.error("Could not write to file: " + file.getName());
@@ -66,6 +66,7 @@ public class HeadStorage {
         }
 
         saveIds();
+        logger.info("Done!");
     }
 
     private void loadIds() {
@@ -74,25 +75,27 @@ public class HeadStorage {
         }
 
         logger.debug("Loading ids...");
-        try (FileReader reader = new FileReader(idContainer)) {
-            JsonObject main = JsonParser.parseReader(reader).getAsJsonObject();
-            lastId = main.get("last_id").getAsInt();
+        try {
+            Utils.decompress(Files.readAllBytes(idContainer.toPath())).ifPresentOrElse(json -> {
+                JsonObject main = JsonParser.parseString(json).getAsJsonObject();
+                lastId = main.get("last_id").getAsInt();
 
-            JsonArray array = main.get("ids").getAsJsonArray();
-            if (array.isEmpty()) {
-                return;
-            }
+                JsonArray array = main.get("ids").getAsJsonArray();
+                if (array.isEmpty()) {
+                    return;
+                }
 
-            int count = 0;
-            for (JsonElement entry : array) {
-                JsonObject obj = entry.getAsJsonObject();
-                ids.put(obj.get("texture").getAsString(), obj.get("id").getAsInt());
-                count++;
-            }
+                int count = 0;
+                for (JsonElement entry : array) {
+                    JsonObject obj = entry.getAsJsonObject();
+                    ids.put(obj.get("texture").getAsString(), obj.get("id").getAsInt());
+                    count++;
+                }
 
-            logger.debug("Loaded " + count + " ids!");
-        } catch (IOException e) {
-            e.printStackTrace();
+                logger.debug("Loaded " + count + " ids!");
+            }, () -> logger.error("Failed to decompress ids!"));
+        } catch (IOException ex) {
+            logger.error("Failed to read bytes from id container!", ex);
         }
     }
 
@@ -111,7 +114,7 @@ public class HeadStorage {
         main.add("ids", array);
 
         try (FileWriter writer = new FileWriter(idContainer)) {
-            writer.write(main.toString());
+            writer.write(Utils.compress(main.toString()));
         } catch (IOException exception) {
             exception.printStackTrace();
         }
