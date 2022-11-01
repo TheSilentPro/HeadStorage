@@ -2,7 +2,7 @@ name: Auto Updater
 on:
   workflow_dispatch:
   schedule:
-    - cron: "5 * * * *" # Every hour at 5 minutes to avoid high load times: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
+    - cron: "0 0 * * *" # Every day at midnight.
     
 jobs:
   Update:
