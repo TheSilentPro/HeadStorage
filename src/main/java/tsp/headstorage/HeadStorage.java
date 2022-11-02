@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +54,7 @@ public class HeadStorage {
                     }
 
                     try (FileWriter writer = new FileWriter(file)) {
-                        writer.write(Utils.compress(injectIds(response)));
+                        writer.write(injectIds(response));
                         logger.info("Updated file category: " + category.name());
                     } catch (IOException ex) {
                         logger.error("Could not write to file: " + file.getName());
@@ -75,25 +75,23 @@ public class HeadStorage {
         }
 
         logger.debug("Loading ids...");
-        try {
-            Utils.decompress(Files.readAllBytes(idContainer.toPath())).ifPresentOrElse(json -> {
-                JsonObject main = JsonParser.parseString(json).getAsJsonObject();
-                lastId = main.get("last_id").getAsInt();
+        try (FileReader reader = new FileReader(idContainer)) {
+            JsonObject main = JsonParser.parseReader(reader).getAsJsonObject();
+            lastId = main.get("last_id").getAsInt();
 
-                JsonArray array = main.get("ids").getAsJsonArray();
-                if (array.isEmpty()) {
-                    return;
-                }
+            JsonArray array = main.get("ids").getAsJsonArray();
+            if (array.isEmpty()) {
+                return;
+            }
 
-                int count = 0;
-                for (JsonElement entry : array) {
-                    JsonObject obj = entry.getAsJsonObject();
-                    ids.put(obj.get("texture").getAsString(), obj.get("id").getAsInt());
-                    count++;
-                }
+            int count = 0;
+            for (JsonElement entry : array) {
+                JsonObject obj = entry.getAsJsonObject();
+                ids.put(obj.get("texture").getAsString(), obj.get("id").getAsInt());
+                count++;
+            }
 
-                logger.debug("Loaded " + count + " ids!");
-            }, () -> logger.error("Failed to decompress ids!"));
+            logger.debug("Loaded " + count + " ids!");
         } catch (IOException ex) {
             logger.error("Failed to read bytes from id container!", ex);
         }
@@ -114,7 +112,7 @@ public class HeadStorage {
         main.add("ids", array);
 
         try (FileWriter writer = new FileWriter(idContainer)) {
-            writer.write(Utils.compress(main.toString()));
+            writer.write(main.toString());
         } catch (IOException exception) {
             exception.printStackTrace();
         }

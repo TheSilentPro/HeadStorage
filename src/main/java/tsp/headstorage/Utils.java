@@ -1,16 +1,11 @@
 package tsp.headstorage;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 public class Utils {
 
@@ -34,33 +29,6 @@ public class Utils {
         }
 
         connection.disconnect();
-        return Optional.empty();
-    }
-
-    public static String compress(String str) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (GZIPOutputStream gzip = new GZIPOutputStream(out)) {
-            gzip.write(str.getBytes(StandardCharsets.UTF_8));
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-
-        return out.toString(StandardCharsets.UTF_8);
-    }
-
-    public static Optional<String> decompress(byte[] compressed) {
-        StringBuilder outStr = new StringBuilder();
-        try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(compressed)); BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gis, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                outStr.append(line);
-            }
-
-            return Optional.of(outStr.toString());
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-
         return Optional.empty();
     }
 
