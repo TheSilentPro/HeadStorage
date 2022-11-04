@@ -1,0 +1,16 @@
+name: Validate Category Json
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Validate JSON
+        uses: OrRosenblatt/validate-json-action@0.1.0
+        env:
+          INPUT_SCHEMA: /schemas/category.json
+          INPUT_JSONS: /storage/alphabet.json,/storage/animals.json,/storage/blocks.json,/storage/decoration.json,/storage/food-drinks.json,/storage/humanoid.json,/storage/humans.json,/storage/miscellaneous.json,/storage/monsters.json,/storage/plants.json
