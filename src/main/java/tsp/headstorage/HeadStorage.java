@@ -74,26 +74,28 @@ public class HeadStorage {
             ids.clear();
         }
 
-        logger.debug("Loading ids...");
-        try (FileReader reader = new FileReader(idContainer)) {
-            JsonObject main = JsonParser.parseReader(reader).getAsJsonObject();
-            lastId = main.get("last_id").getAsInt();
+        if (idContainer.exists()) {
+            logger.debug("Loading ids...");
+            try (FileReader reader = new FileReader(idContainer)) {
+                JsonObject main = JsonParser.parseReader(reader).getAsJsonObject();
+                lastId = main.get("last_id").getAsInt();
 
-            JsonArray array = main.get("ids").getAsJsonArray();
-            if (array.isEmpty()) {
-                return;
+                JsonArray array = main.get("ids").getAsJsonArray();
+                if (array.isEmpty()) {
+                    return;
+                }
+
+                int count = 0;
+                for (JsonElement entry : array) {
+                    JsonObject obj = entry.getAsJsonObject();
+                    ids.put(obj.get("texture").getAsString(), obj.get("id").getAsInt());
+                    count++;
+                }
+
+                logger.debug("Loaded " + count + " ids!");
+            } catch (IOException ex) {
+                logger.error("Failed to read ids from id container!", ex);
             }
-
-            int count = 0;
-            for (JsonElement entry : array) {
-                JsonObject obj = entry.getAsJsonObject();
-                ids.put(obj.get("texture").getAsString(), obj.get("id").getAsInt());
-                count++;
-            }
-
-            logger.debug("Loaded " + count + " ids!");
-        } catch (IOException ex) {
-            logger.error("Failed to read bytes from id container!", ex);
         }
     }
 
