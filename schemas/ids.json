@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "last_id": {
+      "type": "integer"
+    },
+    "ids": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "texture": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "texture",
+            "id"
+          ]
+        }
+      ],
+      "additionalItems": true
+    }
+  },
+  "required": [
+    "last_id",
+    "ids"
+  ]
+}
