@@ -29,6 +29,8 @@ jobs:
         run: |
           git config --global user.name 'AutoUpdater'
           git config --global user.email 'thesilentpro@users.noreply.github.com'
+          git rm -r storage
+          git rm -r ids.json
           git add storage
           git add ids.json
           git commit -m 'Auto-Push Updates'
