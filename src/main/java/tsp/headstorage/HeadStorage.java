@@ -66,6 +66,7 @@ public class HeadStorage {
         }
 
         saveIds();
+        logger.debug("Last ID: " + lastId);
         logger.info("Done!");
     }
 
@@ -112,7 +113,6 @@ public class HeadStorage {
             array.add(obj);
         }
         main.add("ids", array);
-
         try (FileWriter writer = new FileWriter(idContainer)) {
             writer.write(main.toString());
         } catch (IOException exception) {
@@ -121,23 +121,19 @@ public class HeadStorage {
     }
 
     private int getIdOrAdd(String texture) {
-        String st = texture.substring(0, 7);
-
-        logger.trace("Retrieving id for: " + st);
-        int id = this.ids.getOrDefault(texture, -1);
+        int id = ids.getOrDefault(texture, -1);
         if (id == -1) {
-            id = (lastId = lastId + 1);
-            this.ids.put(texture, id);
-            logger.trace("No id present for '" + st + "' | Assigned new id: " + id);
+            id = lastId++;
+            ids.put(texture, id);
+            logger.trace("No id present for '" + texture + "' | Assigned new id: " + id);
         }
 
         return id;
     }
 
     private String injectIds(String json) {
-        logger.debug("Injecting ids...");
+        logger.trace("Injecting ids...");
         JsonArray result = new JsonArray();
-
         JsonArray main = JsonParser.parseString(json).getAsJsonArray();
         for (JsonElement entry : main) {
             JsonObject obj = entry.getAsJsonObject();
